@@ -3,3 +3,4 @@ config/
 logs/
 *pycache*
 *data_*
+resources/*.pptx
