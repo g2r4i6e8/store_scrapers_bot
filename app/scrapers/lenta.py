@@ -1,5 +1,5 @@
 import os
-import urllib
+import sys
 from collections import OrderedDict
 from datetime import date
 
@@ -25,7 +25,7 @@ class LentaSpider(scrapy.Spider):
         yield scrapy.Request(self.url, callback=self.parse, cookies={'CityCookie': 'Spb', 'Store': '0011'})
 
     def parse(self, response):
-        print(response.css('div.address-container__address::text').get().strip())
+        # print(response.css('div.address-container__address::text').get().strip())
         for link in response.xpath('//a[contains(@href, "/product/")]/@href'):
             time.sleep(random.randint(1, 5))
             yield response.follow(link.get(), callback=self.parse_item, cookies={'CityCookie': 'Spb', 'Store': '0011'})
@@ -36,7 +36,7 @@ class LentaSpider(scrapy.Spider):
             yield scrapy.Request(next_page, callback=self.parse, cookies={'CityCookie': 'Spb', 'Store': '0011'})
 
     def parse_item(self, response):
-        print(response.css('div.address-container__address::text').get().strip())
+        # print(response.css('div.address-container__address::text').get().strip())
         item = OrderedDict()
         name = response.css('h1.sku-page__title::text').get().strip()
         item['Название'] = name
@@ -112,6 +112,9 @@ def parse_lenta(url, user_id):
 
 
 if __name__ == "__main__":
-    url = 'https://lenta.com/catalog/bytovaya-himiya/sredstva-dlya-mytya-posudy/'
-    user_id = '511002883'
-    parse_lenta(url, user_id)
+    url = sys.argv[1]
+    user_id = sys.argv[2]
+    print(parse_lenta(url, user_id))
+    # url = 'https://lenta.com/catalog/bytovaya-himiya/sredstva-dlya-mytya-posudy/'
+    # user_id = '511002883'
+    # parse_lenta(url, user_id)

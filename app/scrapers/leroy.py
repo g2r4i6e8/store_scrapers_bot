@@ -81,7 +81,7 @@ def parse_leroy(url, user_id):
     filename = os.path.join(path, '{}_leroy_{}_{}.csv'.format(date.today().strftime("%Y-%m-%d"), pagename, user_id))
     # sys.exit()
     settings = dict(
-        USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36 OPR/75.0.3969.149',
+        USER_AGENT='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
         AUTOTHROTTLE_ENABLED=True,
         AUTOTHROTTLE_START_DELAY=0.25,
         AUTOTHROTTLE_MAX_DELAY=3,

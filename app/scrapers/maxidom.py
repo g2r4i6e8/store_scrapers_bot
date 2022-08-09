@@ -1,4 +1,5 @@
 import os
+import sys
 import urllib
 from collections import OrderedDict
 from datetime import date
@@ -22,21 +23,21 @@ class MaxidomSpider(scrapy.Spider):
         self.path = path
 
     def start_requests(self):
-        yield scrapy.Request(self.url, callback=self.parse)
+        yield scrapy.Request(self.url, callback=self.parse, cookies={'MAXI_LOC_ID': '2'})
 
     def parse(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
         links = response.css('div.caption-list').xpath('a/@href')
-        for link in links[:1]:
+        for link in links:
             time.sleep(random.randint(1, 5))
-            yield response.follow(link.get(), callback=self.parse_item)
+            yield response.follow(link.get(), callback=self.parse_item, cookies={'MAXI_LOC_ID': '2'})
 
         next_page = response.css('aside.pager-catalogue').xpath('div/a/@href').getall()[-1]
 
         if next_page is not None:
             next_page = 'https://maxidom.ru' + next_page
             next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+            yield scrapy.Request(next_page, callback=self.parse, cookies={'MAXI_LOC_ID': '2'})
 
     def parse_item(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
@@ -102,6 +103,9 @@ def parse_maxidom(url, user_id):
 
 
 if __name__ == "__main__":
-    url = 'https://www.maxidom.ru/catalog/osvezhiteli-vozduha/'
-    user_id = '511002883'
-    parse_maxidom(url, user_id)
+    url = sys.argv[1]
+    user_id = sys.argv[2]
+    print(parse_maxidom(url, user_id))
+    # url = 'https://www.maxidom.ru/catalog/osvezhiteli-vozduha/'
+    # user_id = '511002883'
+    # parse_maxidom(url, user_id)

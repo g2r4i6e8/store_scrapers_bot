@@ -1,8 +1,7 @@
-import os
-import zipfile
-from datetime import datetime
+
 import logging
-from zipfile import ZipFile
+from subprocess import PIPE, Popen
+
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -13,10 +12,6 @@ from aiogram.types import ContentType
 import shutil
 
 from app.handlers.general import cmd_idle
-from app.scrapers.lenta import parse_lenta
-from app.scrapers.maxidom import parse_maxidom
-from app.scrapers.poryadok import parse_poryadok
-from app.scrapers.ulybka import parse_ulybka
 from app.tools.clean_output import cleaner
 
 logger = logging.getLogger(__name__)
@@ -70,28 +65,38 @@ async def link_set(message: types.Message, state: FSMContext):
 
     user_data = await state.get_data()
     try:
+        base = "python app/scrapers/{} {} {}"
         if user_data['chosen_store'] == 'Лента':
-            result = parse_lenta(user_data['link'], message.from_user.id)
+            # result = parse_lenta(user_data['link'], message.from_user.id)
+            command = base.format("lenta.py", user_data['link'], message.from_user.id)
         elif user_data['chosen_store'] == 'Максидом':
-            result = parse_maxidom(user_data['link'], message.from_user.id)
+            # result = parse_maxidom(user_data['link'], message.from_user.id)
+            command = base.format("maxidom.py", user_data['link'], message.from_user.id)
         elif user_data['chosen_store'] == 'Порядок':
-            result = parse_poryadok(user_data['link'], message.from_user.id)
+            # result = parse_poryadok(user_data['link'], message.from_user.id)
+            command = base.format("poryadok.py", user_data['link'], message.from_user.id)
         elif user_data['chosen_store'] == 'Улыбка радуги':
-            result = parse_ulybka(user_data['link'], message.from_user.id)
+            # result = parse_ulybka(user_data['link'], message.from_user.id)
+            command = base.format("ulybka.py", user_data['link'], message.from_user.id)
 
         # elif user_data['chosen_store'] == 'Hoff':
         #     pass
             # output_path = parse_hoff(user_data['link'], path)
 
+
+        with Popen(command, stdout=PIPE, stderr=None, shell=True) as process:
+            result = process.communicate()[0].decode("utf-8").strip()
+            # print(process.returncode)
+
         output_path = shutil.make_archive(result, 'zip', result)
         await types.ChatActions.upload_document()
         caption_text = "Готово! Собранные данные ждут тебя в едином архиве\n\n" \
-                       "P.S. Инструкцию по добавлению картинок в Excel можно скачать тут: google.com"
+                       "P.S. Инструкцию по добавлению картинок в Excel можно скачать тут: https://bit.ly/img-2-excel"
         await message.answer_document(open(output_path, 'rb'), caption=caption_text)
         await cleaner('data_{}'.format(message.from_user.id))
     except:
         await cleaner('data_{}'.format(message.from_user.id))
-        await message.answer("В процессе сбора данных произошла ошибка 😢.\nПопробуй повторить запрос позже.")
+        await message.answer("В процессе сбора данных произошла ошибка 😢\nПопробуй повторить запрос позже")
 
     await cmd_idle(message, state)
 

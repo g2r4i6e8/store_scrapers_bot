@@ -1,4 +1,5 @@
 import os
+import sys
 import urllib
 from collections import OrderedDict
 from datetime import date
@@ -27,7 +28,7 @@ class PoryadokSpider(scrapy.Spider):
     def parse(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
         links = response.css('div.catalog-product-inner-wrap').xpath('a/@href')
-        for link in links[:1]:
+        for link in links:
             time.sleep(random.randint(1, 5))
             yield response.follow(link.get(), callback=self.parse_item)
 
@@ -108,6 +109,9 @@ def parse_poryadok(url, user_id):
 
 
 if __name__ == "__main__":
-    url = 'https://spb.poryadok.ru/catalog/osvezhiteli_vozdukha/'
-    user_id = '511002883'
-    parse_poryadok(url, user_id)
+    url = sys.argv[1]
+    user_id = sys.argv[2]
+    print(parse_poryadok(url, user_id))
+    # url = 'https://spb.poryadok.ru/catalog/osvezhiteli_vozdukha/'
+    # user_id = '511002883'
+    # parse_poryadok(url, user_id)

@@ -22,19 +22,19 @@ class HoffSpider(scrapy.Spider):
         self.path = path
 
     def start_requests(self):
-        yield scrapy.Request(self.url, callback=self.parse)
+        yield scrapy.Request(self.url, callback=self.parse, cookies={'current_city': '718'})
 
     def parse(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
         for link in response.xpath('//a[contains(@href, "/catalog/")]/@href')[:1]:
             time.sleep(random.randint(1, 5))
-            yield response.follow(link.get(), callback=self.parse_item)
+            yield response.follow(link.get(), callback=self.parse_item, cookies={'current_city': '718'})
 
         # TODO: pagination
         next_page = response.css('li.next a::attr(href)').get()
         if next_page is not None:
             next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+            yield scrapy.Request(next_page, callback=self.parse, cookies={'current_city': '718'})
 
     def parse_item(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
@@ -81,7 +81,7 @@ def parse_hoff(url, user_id):
     filename = os.path.join(path, '{}_hoff_{}_{}.csv'.format(date.today().strftime("%Y-%m-%d"), pagename, user_id))
     # sys.exit()
     settings = dict(
-        USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36 OPR/75.0.3969.149',
+        USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 OPR/89.0.4447.83',
         AUTOTHROTTLE_ENABLED=True,
         AUTOTHROTTLE_START_DELAY=0.25,
         AUTOTHROTTLE_MAX_DELAY=3,
@@ -105,3 +105,8 @@ if __name__ == "__main__":
     url = 'https://hoff.ru/catalog/tovary_dlya_doma/posuda/servirovka_stola/stolovye_pribory/'
     user_id = '511002883'
     parse_hoff(url, user_id)
+
+    # r = requests.get(
+    #     'https://hoff.ru/vue/catalog/section/?category_id=1060&limit=30&offset=0&showCount=true&type=product_list')
+    # data = r.json()
+

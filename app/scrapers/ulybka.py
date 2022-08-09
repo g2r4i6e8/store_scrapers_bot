@@ -1,4 +1,5 @@
 import os
+import sys
 import urllib
 from collections import OrderedDict
 from datetime import date
@@ -22,20 +23,20 @@ class UlybkaSpider(scrapy.Spider):
         self.path = path
 
     def start_requests(self):
-        yield scrapy.Request(self.url, callback=self.parse)
+        yield scrapy.Request(self.url, callback=self.parse, cookies={'BITRIX_SM_CITY': '190911'})
 
     def parse(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
         links = response.css('div.prod-list').xpath('a/@href')
-        for link in links[:1]:
+        for link in links:
             time.sleep(random.randint(1, 5))
-            yield response.follow(link.get(), callback=self.parse_item)
+            yield response.follow(link.get(), callback=self.parse_item, cookies={'BITRIX_SM_CITY': '190911'})
 
         next_page = response.css('div.pager.more').xpath('a/@href').get()
         if next_page is not None:
             next_page = self.url + next_page
             next_page = response.urljoin(next_page)
-            yield scrapy.Request(next_page, callback=self.parse)
+            yield scrapy.Request(next_page, callback=self.parse, cookies={'BITRIX_SM_CITY': '190911'})
 
     def parse_item(self, response):
         # print(response.css('span.trigger-text::text').get().strip())
@@ -105,6 +106,9 @@ def parse_ulybka(url, user_id):
 
 
 if __name__ == "__main__":
-    url = 'https://www.r-ulybka.ru/u-catalog/vsye-dlya-doma/dlya-aromatizatsii/osvezhiteli-vozdukha/'
-    user_id = '511002883'
-    parse_ulybka(url, user_id)
+    url = sys.argv[1]
+    user_id = sys.argv[2]
+    print(parse_ulybka(url, user_id))
+    # url = 'https://www.r-ulybka.ru/u-catalog/vsye-dlya-doma/dlya-aromatizatsii/osvezhiteli-vozdukha/'
+    # user_id = '511002883'
+    # parse_ulybka(url, user_id)
